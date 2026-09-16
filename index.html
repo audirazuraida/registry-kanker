@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancer Registry Dashboard — Kementerian Kesehatan RI</title>
+<style>
+:root{
+  --green:#007f5f; --green2:#00a86b; --green3:#e8f6f0; --green4:#ccefe1;
+  --dark:#173c32; --text:#263833; --muted:#70817b; --bg:#f4f8f6;
+  --white:#fff; --border:#dce8e3; --danger:#d9534f; --amber:#e49b32;
+  --shadow:0 8px 24px rgba(20,75,57,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,select,input{font:inherit}
+.header{
+  height:76px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:150px;height:48px;object-fit:contain;object-position:left center;border-radius:0;background:#fff;display:block;box-shadow:none}
+.logo svg{width:28px;height:28px}
+.brand-title{font-weight:800;color:var(--dark);font-size:18px;line-height:1.1}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.user{display:flex;align-items:center;gap:12px}
+.user-meta{text-align:right}.user-name{font-weight:700;font-size:13px}.user-role{font-size:11px;color:var(--muted)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--green3);color:var(--green);display:grid;place-items:center;font-weight:800}
+.container{max-width:1500px;margin:auto;padding:24px 28px 40px}
+.title-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:18px}
+h1{margin:0;color:var(--dark);font-size:27px}.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
+.status{display:flex;gap:8px;align-items:center;font-size:12px;color:#587069}
+.dot{width:9px;height:9px;border-radius:50%;background:#20a66f;box-shadow:0 0 0 4px #e0f6ec}
+.filters{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:var(--shadow);margin-bottom:18px}
+.filter-grid{display:grid;grid-template-columns:repeat(8,minmax(110px,1fr));gap:10px}
+.field label{display:block;font-size:10px;font-weight:800;color:#60726c;text-transform:uppercase;letter-spacing:.4px;margin:0 0 5px}
+.field select{width:100%;height:38px;border:1px solid #d7e5df;border-radius:9px;background:#fbfdfc;color:#2f423c;padding:0 9px;outline:none}
+.field select:focus{border-color:var(--green2);box-shadow:0 0 0 3px #e5f7f0}
+.filter-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:11px}
+.btn{border:1px solid #d5e4de;background:#fff;color:#36514a;padding:9px 13px;border-radius:9px;cursor:pointer;font-weight:700;font-size:12px}
+.btn:hover{transform:translateY(-1px)} .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:17px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi:after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;right:-26px;top:-30px;background:var(--green3)}
+.kpi-head{display:flex;justify-content:space-between;align-items:center;color:#62736d;font-size:12px;font-weight:700}
+.kpi-icon{width:31px;height:31px;border-radius:9px;background:var(--green3);display:grid;place-items:center;color:var(--green);z-index:1}
+.kpi-value{font-size:27px;font-weight:850;color:var(--dark);margin:11px 0 3px}.kpi-foot{font-size:11px;color:var(--muted)}
+.up{color:#158b5f;font-weight:700}.warn{color:#b87919;font-weight:700}
+.grid{display:grid;gap:16px;margin-bottom:16px}.g3{grid-template-columns:1.65fr 1fr 1fr}.g2{grid-template-columns:1fr 1fr}.gmap{grid-template-columns:1.45fr 1fr}.gout{grid-template-columns:1fr 1.3fr}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:16px;min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.card-title{font-size:14px;font-weight:800;color:var(--dark)}.card-note{font-size:10px;color:var(--muted);margin-top:3px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#60726c}.legend span{display:flex;gap:5px;align-items:center}.lg{width:8px;height:8px;border-radius:50%}
+.chart{height:250px;position:relative}.chart svg{width:100%;height:100%}
+.tooltip{position:fixed;pointer-events:none;background:#193c33;color:#fff;padding:7px 9px;border-radius:7px;font-size:11px;display:none;z-index:50}
+.donut-wrap{height:235px;display:flex;align-items:center;justify-content:center;gap:20px}
+.donut{width:170px;height:170px;border-radius:50%;position:relative;background:conic-gradient(#00a86b 0 38%,#52c996 38% 62%,#f0bb55 62% 81%,#ef746d 81% 93%,#9caeaa 93% 100%)}
+.donut:after{content:"";position:absolute;inset:42px;background:#fff;border-radius:50%}
+.center{position:absolute;inset:0;display:grid;place-items:center;z-index:2;text-align:center;font-weight:800;color:var(--dark);font-size:20px}.center small{display:block;font-size:9px;color:var(--muted);font-weight:600}
+.dlist{display:grid;gap:8px;font-size:11px;min-width:125px}.drow{display:flex;justify-content:space-between;gap:18px}.dlabel{display:flex;gap:7px;align-items:center}.sw{width:9px;height:9px;border-radius:3px}
+.bar-list{height:240px;display:flex;flex-direction:column;justify-content:space-around;padding:5px 3px}.bar-row{display:grid;grid-template-columns:120px 1fr 48px;gap:9px;align-items:center;font-size:11px}.track{height:14px;background:#eef5f2;border-radius:5px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#007f5f,#36bd8d);border-radius:5px}.bar-val{text-align:right;font-weight:750;color:#45625a}
+.map-box{height:300px;border-radius:12px;background:linear-gradient(#f5fbf8,#edf7f3);position:relative;overflow:hidden;border:1px solid #e1eee9}
+.map-title{position:absolute;left:14px;top:12px;font-size:10px;color:#6a7c75;background:#fff;padding:6px 8px;border-radius:7px;border:1px solid var(--border);z-index:3}
+.islands{position:absolute;inset:0}.island{position:absolute;background:#9bdcc2;border:1px solid #63bd99;cursor:pointer;transition:.18s;box-shadow:0 3px 8px rgba(0,90,60,.08)}
+.island:hover,.island.active{background:#007f5f;transform:scale(1.06);z-index:5}
+.sumatra{width:155px;height:48px;left:7%;top:38%;transform:rotate(-15deg);border-radius:55% 35% 45% 40%}
+.java{width:210px;height:25px;left:34%;top:63%;transform:rotate(5deg);border-radius:50%}
+.kalimantan{width:120px;height:105px;left:45%;top:27%;border-radius:45% 52% 42% 55%}
+.sulawesi{width:100px;height:100px;left:62%;top:37%;border-radius:42% 58% 38% 55%;transform:rotate(12deg)}
+.papua{width:175px;height:70px;right:4%;top:42%;transform:rotate(-6deg);border-radius:48% 60% 45% 38%}
+.bali{width:25px;height:9px;left:51%;top:67%;border-radius:50%}.ntt{width:85px;height:9px;left:56%;top:73%;border-radius:50%}
+.map-label{position:absolute;font-size:9px;font-weight:800;color:#3f7662;pointer-events:none}.ml1{left:12%;top:31%}.ml2{left:40%;top:68%}.ml3{left:47%;top:21%}.ml4{left:65%;top:33%}.ml5{right:9%;top:35%}
+table{width:100%;border-collapse:collapse;font-size:11px}th{background:#f1f8f5;color:#527068;text-align:left;padding:10px;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase}td{padding:10px;border-bottom:1px solid #edf2f0}tr:hover td{background:#fbfdfc}.pill{padding:4px 7px;border-radius:20px;font-size:9px;font-weight:800}.alive{background:#e4f7ef;color:#087650}.active{background:#e8f1ff;color:#3568a8}.finished{background:#f0f2f1;color:#68756f}.detail-btn{border:0;background:none;color:var(--green);font-weight:800;cursor:pointer}
+.footer{font-size:10px;color:#83938d;text-align:center;margin-top:15px}
+.modal{position:fixed;inset:0;background:rgba(12,45,35,.35);display:none;align-items:center;justify-content:center;z-index:100}.modal.open{display:flex}.modal-box{background:#fff;width:min(680px,92vw);border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.2)}.modal-head{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf6f2;border-radius:8px;width:32px;height:32px;cursor:pointer}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.detail{background:#f7faf9;border-radius:9px;padding:10px}.detail small{display:block;color:var(--muted);font-size:9px}.detail strong{font-size:12px;color:var(--dark)}
+@media(max-width:1100px){.filter-grid{grid-template-columns:repeat(4,1fr)}.g3,.g2,.gmap,.gout{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.container{padding:16px}.header{padding:0 15px}.brand-sub{display:none}.filter-grid{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr}.title-row{display:block}.status{margin-top:10px}.bar-row{grid-template-columns:90px 1fr 40px}.donut-wrap{gap:8px}.dlist{min-width:105px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <img class="logo"
+        src="https://www.kemkes.go.id/app_asset/file_content_download/170619174165b26b7d195019.13538774.png"
+        alt="Kementerian Kesehatan Republik Indonesia">
+    <div><div class="brand-title">Kementerian Kesehatan RI</div><div class="brand-sub">Cancer Registry • SATUSEHAT Analytics</div></div>
+  </div>
+  <div class="user"><div class="user-meta"><div class="user-name">User</div><div class="user-role">Ministry of Health</div></div><div class="avatar">U</div></div>
+</header>
+
+<main class="container">
+  <div class="title-row">
+    <div><h1>Dashboard Registry Kanker</h1><div class="subtitle">Monitoring epidemiologi, diagnosis, TNM, stadium, terapi, dan clinical outcomes kanker tingkat nasional.</div></div>
+    <div class="status"><span class="dot"></span><span>Data refresh: <b>Daily</b> • Last data refreshed: <b id="refreshTime">16 Sep 2026, 06:00 WIB</b></span></div>
+  </div>
+
+  <section class="filters">
+    <div class="filter-grid">
+      <div class="field"><label>Year</label><select id="year"><option>2026</option><option>2025</option><option>2024</option></select></div>
+      <div class="field"><label>Month / Quarter</label><select id="period"><option>Q1</option><option>Q2</option><option selected>Q3</option><option>Q4</option></select></div>
+      <div class="field"><label>Province</label><select id="province"><option>All Provinces</option><option>DKI Jakarta</option><option>Jawa Barat</option><option>Jawa Tengah</option><option>Jawa Timur</option><option>Sumatera Utara</option></select></div>
+      <div class="field"><label>Regency / City</label><select id="regency"><option>All Regency / City</option><option>Jakarta Selatan</option><option>Bandung</option><option>Semarang</option><option>Surabaya</option></select></div>
+      <div class="field"><label>Health Facility</label><select id="facility"><option>All FKRTL</option><option>RSUP Nasional</option><option>RS Kanker Dharmais</option><option>RSUD Regional</option></select></div>
+      <div class="field"><label>Cancer Type</label><select id="ctype"><option>All Cancer Types</option><option>Cervical</option><option>Breast</option><option>Lung</option><option>Colorectal</option></select></div>
+      <div class="field"><label>Tumor Stage</label><select id="stage"><option>All Stages</option><option>Stage 0</option><option>Stage I</option><option>Stage II</option><option>Stage III</option><option>Stage IV</option></select></div>
+      <div class="field"><label>Gender</label><select id="gender"><option>All</option><option>Female</option><option>Male</option></select></div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn" onclick="resetFilters()">↺ Reset</button>
+      <button class="btn primary" onclick="applyFilters()">✓ Apply Filters</button>
+      <button class="btn primary" onclick="downloadCSV()">⇩ Download CSV</button>
+    </div>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><div class="kpi-head"><span>Total Cancer Cases</span><span class="kpi-icon">✚</span></div><div class="kpi-value" id="totalKpi">52,734</div><div class="kpi-foot"><span class="up">+6.8%</span> vs previous period</div></div>
+    <div class="kpi"><div class="kpi-head"><span>New Cancer Cases</span><span class="kpi-icon">＋</span></div><div class="kpi-value" id="newKpi">31,842</div><div class="kpi-foot"><span class="up">+4.2%</span> newly diagnosed</div></div>
+    <div class="kpi"><div class="kpi-head"><span>Suspected Cancer Cases</span><span class="kpi-icon">?</span></div><div class="kpi-value" id="susKpi">4,921</div><div class="kpi-foot"><span class="warn">Waitlist</span> / suspected status</div></div>
+    <div class="kpi"><div class="kpi-head"><span>In-Hospital Mortality</span><span class="kpi-icon">†</span></div><div class="kpi-value" id="mortKpi">8,642</div><div class="kpi-foot"><span class="warn">16.4%</span> of treated cases</div></div>
+  </section>
+
+  <section class="grid g3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Cancer Cases Trend</div><div class="card-note">Monthly • Number of cases</div></div><div class="legend"><span><i class="lg" style="background:#007f5f"></i>Total</span><span><i class="lg" style="background:#48bd8e"></i>New</span><span><i class="lg" style="background:#e7a945"></i>Suspected</span></div></div>
+      <div class="chart" id="trendChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Tumor Stage Distribution</div><div class="card-note">Share of cancer patients</div></div></div>
+      <div class="donut-wrap"><div class="donut"><div class="center">52.7K<small>cases</small></div></div><div class="dlist">
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#00a86b"></i>Stage I</span><b>18%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#52c996"></i>Stage II</span><b>24%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#f0bb55"></i>Stage III</span><b>19%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#ef746d"></i>Stage IV</span><b>12%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#9caeaa"></i>Unknown/0</span><b>27%</b></div>
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Clinical TNM Distribution</div><div class="card-note">Patient distribution by category</div></div></div>
+      <div class="donut-wrap"><div class="donut" style="background:conic-gradient(#007f5f 0 31%,#41b987 31% 57%,#ef746d 57% 74%,#d7e1de 74% 100%)"><div class="center">TNM<small>distribution</small></div></div><div class="dlist">
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#007f5f"></i>T</span><b>31%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#41b987"></i>N</span><b>26%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#ef746d"></i>M</span><b>17%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#d7e1de"></i>N/A</span><b>26%</b></div>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="grid g2">
+    <div class="card"><div class="card-head"><div><div class="card-title">ICD-10 Diagnosis Distribution</div><div class="card-note">Proportion by selected cancer diagnosis</div></div></div>
+      <div class="bar-list">
+        <div class="bar-row"><span>C53 • Cervical</span><div class="track"><div class="fill" style="width:82%"></div></div><span class="bar-val">18.4%</span></div>
+        <div class="bar-row"><span>C50 • Breast</span><div class="track"><div class="fill" style="width:96%"></div></div><span class="bar-val">21.7%</span></div>
+        <div class="bar-row"><span>C34 • Lung</span><div class="track"><div class="fill" style="width:61%"></div></div><span class="bar-val">13.9%</span></div>
+        <div class="bar-row"><span>C18-C20 • Colorectal</span><div class="track"><div class="fill" style="width:55%"></div></div><span class="bar-val">12.6%</span></div>
+        <div class="bar-row"><span>Other C00-C97</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="bar-val">33.4%</span></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Case Distribution by Age Group</div><div class="card-note">Distinct patients</div></div></div>
+      <div class="bar-list">
+        <div class="bar-row"><span>&lt;18</span><div class="track"><div class="fill" style="width:16%"></div></div><span class="bar-val">2,184</span></div>
+        <div class="bar-row"><span>18–44</span><div class="track"><div class="fill" style="width:61%"></div></div><span class="bar-val">8,540</span></div>
+        <div class="bar-row"><span>45–64</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="bar-val">13,921</span></div>
+        <div class="bar-row"><span>≥65</span><div class="track"><div class="fill" style="width:78%"></div></div><span class="bar-val">10,862</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gmap">
+    <div class="card"><div class="card-head"><div><div class="card-title">Case Distribution by Province</div><div class="card-note">Choropleth-style interactive map • click a region to drill down</div></div><span class="pill active">38 Provinces</span></div>
+      <div class="map-box">
+        <div class="map-title">Cancer cases intensity</div>
+        <div class="islands">
+          <div class="island sumatra" title="Sumatra • 11,420 cases" onclick="mapClick('Sumatra')"></div>
+          <div class="island java" title="Java • 22,870 cases" onclick="mapClick('Jawa')"></div>
+          <div class="island kalimantan" title="Kalimantan • 6,140 cases" onclick="mapClick('Kalimantan')"></div>
+          <div class="island sulawesi" title="Sulawesi • 5,180 cases" onclick="mapClick('Sulawesi')"></div>
+          <div class="island papua" title="Papua • 3,420 cases" onclick="mapClick('Papua')"></div>
+          <div class="island bali" title="Bali • 1,020 cases" onclick="mapClick('Bali')"></div>
+          <div class="island ntt" title="Nusa Tenggara • 1,870 cases" onclick="mapClick('Nusa Tenggara')"></div>
+          <span class="map-label ml1">SUMATRA</span><span class="map-label ml2">JAVA</span><span class="map-label ml3">KALIMANTAN</span><span class="map-label ml4">SULAWESI</span><span class="map-label ml5">PAPUA</span>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Cancer Type Trend</div><div class="card-note">Top 5 cancer types by period</div></div></div><div class="chart" id="typeTrend"></div></div>
+  </section>
+
+  <section class="grid g3">
+    <div class="card"><div class="card-head"><div><div class="card-title">Medical Procedures</div><div class="card-note">Proportion of cancer patients receiving therapy</div></div></div>
+      <div class="donut-wrap"><div class="donut" style="background:conic-gradient(#007f5f 0 36%,#4ac08e 36% 60%,#e5ad4f 60% 79%,#8fa6a0 79% 100%)"><div class="center">Therapy<small>share</small></div></div><div class="dlist">
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#007f5f"></i>Chemotherapy</span><b>36%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#4ac08e"></i>Radiotherapy</span><b>24%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#e5ad4f"></i>Surgery</span><b>19%</b></div>
+        <div class="drow"><span class="dlabel"><i class="sw" style="background:#8fa6a0"></i>Combined</span><b>21%</b></div>
+      </div></div>
+    </div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Clinical Outcomes</div><div class="card-note">Prognosis and in-hospital mortality</div></div></div>
+      <div class="bar-list">
+        <div class="bar-row"><span>Good prognosis</span><div class="track"><div class="fill" style="width:72%"></div></div><span class="bar-val">72%</span></div>
+        <div class="bar-row"><span>Poor prognosis</span><div class="track"><div class="fill" style="width:28%"></div></div><span class="bar-val">28%</span></div>
+        <div class="bar-row"><span>Mortality</span><div class="track"><div class="fill" style="width:31%"></div></div><span class="bar-val">16.4%</span></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Mortality by Stage</div><div class="card-note">Monthly mortality rate</div></div></div>
+      <div class="bar-list">
+        <div class="bar-row"><span>Stage I</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="bar-val">4.2%</span></div>
+        <div class="bar-row"><span>Stage II</span><div class="track"><div class="fill" style="width:36%"></div></div><span class="bar-val">7.8%</span></div>
+        <div class="bar-row"><span>Stage III</span><div class="track"><div class="fill" style="width:62%"></div></div><span class="bar-val">13.4%</span></div>
+        <div class="bar-row"><span>Stage IV</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="bar-val">27.8%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><div class="card-title">Cancer Registry Case Details</div><div class="card-note">Mockup data • patient name anonymized for export</div></div><button class="btn primary" onclick="downloadCSV()">⇩ Export CSV</button></div>
+    <div style="overflow:auto">
+    <table><thead><tr><th>No.</th><th>Admission Date</th><th>Patient</th><th>Gender</th><th>Age</th><th>Province</th><th>Health Facility</th><th>ICD-10</th><th>TNM</th><th>Stage</th><th>Procedure</th><th>Prognosis</th><th>Episode</th><th>Vital</th><th></th></tr></thead>
+    <tbody id="caseTable"></tbody></table>
+    </div>
+  </section>
+  <div class="footer">Mockup interaktif berdasarkan PRD Cancer Registry Dashboard v1.0 • Source architecture: SATUSEHAT FHIR API / BigQuery Silver → Gold Table → Tableau • Refresh daily.</div>
+</main>
+
+<div class="tooltip" id="tip"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box">
+  <div class="modal-head"><div><div class="card-title" style="font-size:18px">Case Detail</div><div class="card-note">Consolidated Cancer Registry view</div></div><button class="close" onclick="closeModal()">×</button></div>
+  <div class="detail-grid" id="detailGrid"></div>
+</div></div>
+
+<script>
+const cases=[
+ {date:"12 Sep 2026",name:"Patient A***",gender:"Female",age:52,province:"DKI Jakarta",facility:"RS Kanker Dharmais",icd:"C50.9",tnm:"T2 N1 M0",stage:"II",procedure:"Chemotherapy",prog:"Good",episode:"active",vital:"Alive"},
+ {date:"11 Sep 2026",name:"Patient B***",gender:"Male",age:67,province:"Jawa Barat",facility:"RSUD Regional",icd:"C34.9",tnm:"T3 N2 M1",stage:"IV",procedure:"Radiotherapy",prog:"Poor",episode:"active",vital:"Deceased"},
+ {date:"10 Sep 2026",name:"Patient C***",gender:"Female",age:44,province:"Jawa Tengah",facility:"RSUP Nasional",icd:"C53.9",tnm:"T1 N0 M0",stage:"I",procedure:"Surgery",prog:"Good",episode:"finished",vital:"Alive"},
+ {date:"09 Sep 2026",name:"Patient D***",gender:"Male",age:59,province:"Jawa Timur",facility:"RSUD Regional",icd:"C18.7",tnm:"T3 N1 M0",stage:"III",procedure:"Combined",prog:"Poor",episode:"active",vital:"Alive"},
+ {date:"08 Sep 2026",name:"Patient E***",gender:"Female",age:31,province:"Sumatera Utara",facility:"RSUP Nasional",icd:"C50.8",tnm:"N/A",stage:"Unknown",procedure:"Chemotherapy",prog:"Good",episode:"waitlist",vital:"Alive"}
+];
+function renderTable(rows=cases){
+ const tb=document.getElementById("caseTable");
+ tb.innerHTML=rows.map((r,i)=>`<tr>
+ <td>${i+1}</td><td>${r.date}</td><td><b>${r.name}</b></td><td>${r.gender}</td><td>${r.age}</td><td>${r.province}</td><td>${r.facility}</td><td><b>${r.icd}</b></td><td>${r.tnm}</td><td>${r.stage}</td><td>${r.procedure}</td><td>${r.prog}</td>
+ <td><span class="pill ${r.episode}">${r.episode}</span></td><td>${r.vital}</td><td><button class="detail-btn" onclick='showDetail(${JSON.stringify(r)})'>View</button></td></tr>`).join("");
+}
+function resetFilters(){document.querySelectorAll(".field select").forEach(s=>s.selectedIndex=0);document.getElementById("period").value="Q3";renderTable();updateKpis(false)}
+function applyFilters(){
+ const gender=document.getElementById("gender").value, stage=document.getElementById("stage").value, prov=document.getElementById("province").value;
+ let rows=cases.filter(r=>(gender==="All"||r.gender===gender)&&(stage==="All Stages"||r.stage===stage)&&(prov==="All Provinces"||r.province===prov));
+ renderTable(rows);
+ updateKpis(rows.length>0);
+}
+function updateKpis(filtered){if(filtered){document.getElementById("totalKpi").textContent="18,426";document.getElementById("newKpi").textContent="10,982";document.getElementById("susKpi").textContent="1,742";document.getElementById("mortKpi").textContent="2,913"}else{document.getElementById("totalKpi").textContent="52,734";document.getElementById("newKpi").textContent="31,842";document.getElementById("susKpi").textContent="4,921";document.getElementById("mortKpi").textContent="8,642"}}
+function mapClick(region){alert("Drill-down wilayah: "+region+"\\nPada implementasi Tableau, klik provinsi akan membuka level Kabupaten/Kota.")}
+function showDetail(r){document.getElementById("detailGrid").innerHTML=Object.entries({"Admission Date":r.date,"Patient":r.name,"Gender":r.gender,"Age":r.age,"Province":r.province,"Health Facility":r.facility,"ICD-10 Diagnosis":r.icd,"Clinical TNM":r.tnm,"Tumor Stage":r.stage,"Medical Procedure":r.procedure,"Prognosis":r.prog,"Episode Status":r.episode,"Vital Status":r.vital}).map(([k,v])=>`<div class="detail"><small>${k}</small><strong>${v}</strong></div>`).join("");document.getElementById("modal").classList.add("open")}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function downloadCSV(){
+ const header=["No","Admission Date","Patient","Gender","Age","Province","Health Facility","ICD-10","Clinical TNM","Tumor Stage","Medical Procedure","Prognosis","Episode Status","Vital Status"];
+ const rows=[header,...cases.map((r,i)=>[i+1,r.date,r.name,r.gender,r.age,r.province,r.facility,r.icd,r.tnm,r.stage,r.procedure,r.prog,r.episode,r.vital])];
+ const csv=rows.map(a=>a.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cancer_registry_cases.csv";a.click();URL.revokeObjectURL(url)
+}
+function lineChart(elId,labels,series){
+ const el=document.getElementById(elId), w=700,h=245,p=38;let max=Math.max(...series.flatMap(s=>s.data))*1.15;
+ let grid="",xlabels="",paths="";
+ for(let i=0;i<5;i++){let y=p+(h-p*1.45)*i/4;grid+=`<line x1="${p}" y1="${y}" x2="${w-15}" y2="${y}" stroke="#e6efeb"/>`}
+ labels.forEach((l,i)=>{let x=p+(w-p-25)*i/(labels.length-1);xlabels+=`<text x="${x}" y="${h-7}" text-anchor="middle" font-size="10" fill="#71837c">${l}</text>`});
+ const pts=[];
+ series.forEach((s,si)=>{let points=s.data.map((v,i)=>{let x=p+(w-p-25)*i/(labels.length-1), y=h-p-(v/max)*(h-p*1.45);return [x,y]}),d=points.map((q,i)=>(i?"L":"M")+q[0]+" "+q[1]).join(" ");paths+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linecap="round"/>`;points.forEach(q=>paths+=`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="#fff" stroke="${s.color}" stroke-width="2"/>`)});
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${grid}${paths}${xlabels}</svg>`;
+}
+lineChart("trendChart",["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"],[
+ {color:"#007f5f",data:[4200,4650,4900,5250,5480,5740,6030,6310,6680]},
+ {color:"#48bd8e",data:[2500,2820,3010,3280,3470,3620,3810,4020,4250]},
+ {color:"#e7a945",data:[520,560,590,610,650,690,720,760,790]}
+]);
+lineChart("typeTrend",["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"],[
+ {color:"#007f5f",data:[1900,2050,2140,2250,2370,2490,2610,2750,2890]},
+ {color:"#48bd8e",data:[1750,1880,2010,2150,2290,2430,2550,2680,2810]},
+ {color:"#e7a945",data:[1320,1410,1500,1580,1670,1760,1850,1950,2040]}
+]);
+renderTable();
+</script>
+</body>
+</html>
